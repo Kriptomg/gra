@@ -188,6 +188,7 @@ def get_daily_volume_usd(coin):
         except Exception as e:
             time.sleep(5)
     return None, "get_daily_volume_usd hata"
+
 def get_daily_price(coin):
     if coin not in COINGECKO_IDS:
         return None, "ID yok"
@@ -236,7 +237,6 @@ def yorum_uret(fark, gunluk_hacim, yon, hacim_var):
             return f"🔴 Satış baskısı hissediliyor, hareket başlayabilir. (Günlük hacme oran: {oran_s})"
         else:
             return f"🔴 Güçlü satış baskısı! Piyasa satıma dönüyor, dikkatli ol. (Günlük hacme oran: {oran_s})"
-
 def get_period_yon(data):
     fark = data['in_amount'] - data['out_amount']
     if fark > 0:
@@ -245,7 +245,7 @@ def get_period_yon(data):
         return 'out'
     else:
         return None
-    return "\n".join(out)
+
 def format_btc_whale_report(all_period_data, all_xchain_data,
                             gunluk_hacim, gunluk_fiyat, hacim_var, hacim_error, now_tr):
     out = [f"\n━━ 🐋 Balina Transfer Analizi ━━"]
@@ -285,7 +285,7 @@ def format_btc_whale_report(all_period_data, all_xchain_data,
             )
         yorum = yorum_uret(fark_usd, gunluk_hacim, yon, hacim_var)
         out.append("    " + yorum)
-        return "\n".join(out)
+    return "\n".join(out)
 
 def format_all_coins_whale_report(per_coin, per_coin_xchain, gunluk_hacimler, gunluk_fiyatlar, now_tr):
     out = ["\n━━ 🐋 Balina Transfer Analizi (Tüm Coinler) ━━"]
@@ -500,6 +500,7 @@ def trend_strength_text(trend, adx_val):
         return f"{trend}, orta trend (ADX {adx_val:.2f})"
     else:
         return f"{trend}, güçlü trend (ADX {adx_val:.2f})"
+
 def btc_kisavadeli_analizler(ohlcv_dict, current_price, dtstr_tr, dtstr_utc):
     results = []
     vadeler = [
@@ -579,13 +580,12 @@ def btc_kisavadeli_analizler(ohlcv_dict, current_price, dtstr_tr, dtstr_utc):
                 signal = "🔴"
                 strength = "SAT"
         results.append(
-            f"📉 {vade} Analiz: {signal} {strength} | EMA7/21: {'Pozitif' if trend == 'Pozitif' else 'Negatif' if trend == 'Negatif' else 'Veri yok'} | MACD: {'Pozitif' if macd_line is not None and macd_line > 0 else 'Negatif' if macd_line is not None and macd_line < 0 else 'Veri yok'} | RSI: {rsi_val:.2f} | ATR: {atr_val:.2f} | Volatilite: {vol_txt}"
+            f"📉 {vade} Analiz: {signal} {strength} | EMA7/21: {'Pozitif' if trend == 'Pozitif' else 'Negatif' if trend == 'Negatif' else 'Veri yok'} | MACD: {'Pozitif' if macd_line is not None and macd_line > 0 else 'Negatif' if macd_line is not None and macd_line < 0 else 'Veri yok'} | RSI: {rsi_val:.2f if rsi_val is not None else 'Yok'} | Volatilite: {vol_txt}"
         )
         if vade == "5dk":
             results.append(
                 "⚠️ 5dk'lık analizlerde volatilite ve ATR genellikle düşüktür, ani hareketler yanıltıcı olabilir.")
     return "━━ Kısa Vadeli BTC Analizleri ━━\n" + "\n".join(results) + "\n\n"
-
 def get_spot_ohlcv(symbol="BTCUSDT", interval="1h", limit=200):
     url = f"https://api.binance.com/api/v3/klines?symbol={symbol}&interval={interval}&limit={limit}"
     r = requests.get(url, timeout=10)
@@ -609,6 +609,7 @@ def get_spot_ohlcv(symbol="BTCUSDT", interval="1h", limit=200):
         except (ValueError, IndexError, TypeError):
             continue  # Bozuk/hatalı satırı atla
     return ohlcv
+
 def btc_teknik_analiz_raporu(
     ohlcv,
     current_price,
@@ -796,48 +797,47 @@ def btc_teknik_analiz_raporu(
     rapor.append("─────")
     rapor.append(f"📊 {vade}")
     rapor.append(f"Sinyal: {signal} (Skor: {score}/{max_score})")
-    rapor.append(f"• EMA7: {ema7:.2f} | EMA21: {ema21:.2f} → {'Negatif' if ema7 is not None and ema21 is not None and ema7 < ema21 else 'Pozitif' if ema7 is not None and ema21 is not None else 'Veri yok'}")
-    rapor.append(f"• MACD: {macd_line:.2f} → {'Negatif, momentum aşağı.' if macd_line is not None and macd_line < 0 else 'Pozitif, momentum yukarı.' if macd_line is not None and macd_line >= 0 else 'Veri yok'}")
     rapor.append(
-        f"• RSI: {rsi_val:.2f}" if rsi_val is not None else "• RSI: Veri yok")
+        f"• EMA7: {ema7:.2f} | EMA21: {ema21:.2f} → {'Negatif' if ema7 is not None and ema21 is not None and ema7 < ema21 else 'Pozitif' if ema7 is not None and ema21 is not None else 'Veri yok'}"
+    )
     rapor.append(
-        f"• StochRSI: {stochrsi_val:.2f}" if stochrsi_val is not None else "• StochRSI: Veri yok")
+        f"• MACD: {macd_line:.2f} → {'Negatif, momentum aşağı.' if macd_line is not None and macd_line < 0 else 'Pozitif, momentum yukarı.' if macd_line is not None and macd_line >= 0 else 'Veri yok'}"
+    )
+
+    # Değerlerin string karşılıklarını oluştur
+    rsi_str = f"{rsi_val:.2f}" if rsi_val is not None else "Veri yok"
+    stochrsi_str = f"{stochrsi_val:.2f}" if stochrsi_val is not None else "Veri yok"
+    mfi_str = f"{mfi_val:.2f}" if mfi_val is not None else "Veri yok"
+
+    rapor.append(f"• RSI: {rsi_str}")
+    rapor.append(f"• StochRSI: {stochrsi_str}")
+    rapor.append(f"• MFI: {mfi_str}")
+
     rapor.append(
-        f"• MFI: {mfi_val:.2f}" if mfi_val is not None else "• MFI: Veri yok")
+        f"• ADX: {adx_val:.2f} → {'Güçlü trend var.' if adx_val is not None and adx_val > 25 else 'Trend zayıf.' if adx_val is not None else 'Veri yok'}"
+    )
     rapor.append(
-        f"• ADX: {adx_val:.2f} → {'Güçlü trend var.' if adx_val is not None and adx_val > 25 else 'Trend zayıf.' if adx_val is not None else 'Veri yok'}")
-    rapor.append(
-        f"• OBV: {obv_val:.2f} → {'Alış baskısı var.' if obv_val is not None and obv_val > 0 else 'Satış baskısı var.' if obv_val is not None and obv_val < 0 else 'Veri yok'}")
+        f"• OBV: {obv_val:.2f} → {'Alış baskısı var.' if obv_val is not None and obv_val > 0 else 'Satış baskısı var.' if obv_val is not None and obv_val < 0 else 'Veri yok'}"
+    )
+
     if boll_ma is not None and boll_up is not None and boll_down is not None:
         rapor.append(
-            f"• Bollinger: MA {boll_ma[-1]:.2f} | Üst {boll_up[-1]:.2f} | Alt {boll_down[-1]:.2f}")
+            f"• Bollinger: MA {boll_ma[-1]:.2f} | Üst {boll_up[-1]:.2f} | Alt {boll_down[-1]:.2f}"
+        )
     else:
         rapor.append("• Bollinger: Veri yok")
+
     rapor.append(f"• Trend filtresi: {trend_guc_txt}")
     rapor.append(f"• Volatilite: {volatility_txt}")
     rapor.append(f"• Destek: ${destek:,.2f} | Direnç: ${direnç:,.2f}")
     rapor.append(ek_veriler)
     if missing:
         rapor.append(
-            f"\n⚠️ Eksik gösterge(ler): {', '.join(missing)} (Bu göstergeler skora katılmadı)")
+            f"\n⚠️ Eksik gösterge(ler): {', '.join(missing)} (Bu göstergeler skora katılmadı)"
+        )
     return "\n".join(
-        rapor), score, max_score, destek, direnç, ema7, ema21, macd_line, rsi_val, obv_val, trend, obv_1h_pct
-def get_funding_rate(symbol="BTCUSDT"):
-    url = f"https://fapi.binance.com/fapi/v1/fundingRate?symbol={symbol}&limit=1"
-    try:
-        result = requests.get(url, timeout=10).json()
-        return float(result[0]['fundingRate'])
-    except Exception:
-        return None
-
-def get_open_interest(symbol="BTCUSDT"):
-    url = f"https://fapi.binance.com/fapi/v1/openInterest?symbol={symbol}"
-    try:
-        result = requests.get(url, timeout=10).json()
-        return float(result['openInterest'])
-    except Exception:
-        return None
-
+        rapor
+    ), score, max_score, destek, direnç, ema7, ema21, macd_line, rsi_val, obv_val, trend, obv_1h_pct
 def get_long_short_ratio(symbol="BTCUSDT", period="5m"):
     url = f"https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol={symbol}&period={period}&limit=1"
     try:
@@ -908,6 +908,7 @@ def btc_piyasa_analiz_turkce():
         if any_data:
             out += "\n".join(lines) + "\n"
     return out
+
 def nihai_oneri(skor_5m, skor_15m, skor_30m, skor_1h, skor_4h,
                 skor_1d, trend_1h, trend_4h, trend_1d):
     karar = "TUT"
@@ -967,11 +968,8 @@ def plot_technical_indicators(ohlcv):
     ax2.axhline(70, color='red', linestyle='--')
     ax2.axhline(30, color='green', linestyle='--')
     ax3.bar(range(len(ohlcv['volume'][-100:])), ohlcv['volume'][-100:], color='#5555ff')
-    buf = BytesIO()
-    plt.savefig(buf, format='png', dpi=100, facecolor='#121212')
-    plt.close()
-    buf.seek(0)
-    return buf
+    plt.tight_layout()
+    plt.show()
 
 def backtest_strategy(ohlcv_data, lookback=50):
     signals = []
@@ -988,6 +986,7 @@ def backtest_strategy(ohlcv_data, lookback=50):
         sell_condition = (rsi_last > 70 and macd_last < 0)
         signals.append(1 if buy_condition else (-1 if sell_condition else 0))
     return signals
+
 async def main():
     # Telegram bağlantısı ve mesaj çekme
     client = TelegramClient('anon', api_id, api_hash)
@@ -1082,6 +1081,10 @@ async def main():
     send_telegram_message(rapor)
     print("Rapor Telegram'a gönderildi.")
 
+    # Grafik çizimi
+    print("Grafik oluşturuluyor...")
+    plot_technical_indicators(ohlcv_1h)
+
 if __name__ == "__main__":
+    import asyncio
     asyncio.run(main())
-    
